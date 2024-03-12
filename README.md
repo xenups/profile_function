@@ -20,6 +20,24 @@ def f(x, y):
     return s
 ```
 
+Using Prometheus:
+```python
+from profile_function import ProfileFunction, PrometheusBackend
+from prometheus_client import start_http_server
+
+start_http_server(9090)
+
+pf = ProfileFunction(PrometheusBackend())
+
+@pf.profile_function(group="rpc")
+def f(x, y):
+    s = 0
+    with pf.profile_block("for_loop"):
+        for i in range(x):
+           s += i * x + y
+    return s
+```
+
 Using logger:
 ```python
 from profile_function import ProfileFunction, LoggerBackend

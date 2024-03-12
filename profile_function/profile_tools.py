@@ -29,7 +29,7 @@ class ProfileFunction(object):
 
         return path
 
-    def get_profiling_metric_name(self, name, group, block=None):
+    def get_profiling_metric_name(self, name, group, block=None, sep=None):
         """
         returns metric name to save in graphite
 
@@ -37,12 +37,14 @@ class ProfileFunction(object):
             name: function to find metric name for profiling
             group: scope to group the function in stats
             block: specific block of the function (could be None)
+            sep: separator for metric name
 
         Returns:
-            metric name to save it it graphite
+            metric name to save it it metric backend
         """
-        path = self.get_name(name, group, block=block, sep=self.backend.name_separator)
-        return format("{}.{}.{}".format(self.namespace, METRIC_MODE_TIME, path))
+        _sep = sep or self.backend.name_separator
+        path = self.get_name(name, group, block=block, sep=_sep)
+        return f"{self.namespace}{_sep}{METRIC_MODE_TIME}{_sep}{path}"
 
     def profile_block(self, block_name, group="other", block=None):
         """
@@ -56,6 +58,7 @@ class ProfileFunction(object):
         Returns:
             timer object
         """
+
         return self.backend.timer(
             self.get_profiling_metric_name(block_name, group, block=block)
         )

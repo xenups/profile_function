@@ -1,6 +1,8 @@
+import logging
 import timeit
 from abc import ABCMeta, abstractmethod
-import logging
+
+from prometheus_client import Summary
 
 
 class CollectorBackend(object):
@@ -84,4 +86,27 @@ class LoggerBackend(CollectorBackend):
         return TimerContext(self.logger, name, self.log_level)
 
 
-__all__ = (CollectorBackend.__name__, LoggerBackend.__name__, StatsdBackend.__name__)
+class PrometheusBackend(CollectorBackend):
+    """
+    Backend to collect data to prometheus
+    """
+
+    name_separator = "_"
+
+    def __init__(self) -> None:
+        self.__metrics = {}
+        super().__init__()
+
+    def timer(self, name):
+        if name not in self.__metrics:
+            self.__metrics[name] = Summary(name, f"Elapsed time for {name}")
+
+        return self.__metrics[name].time()
+
+
+__all__ = (
+    CollectorBackend.__name__,
+    LoggerBackend.__name__,
+    StatsdBackend.__name__,
+    PrometheusBackend.__name__,
+)
