@@ -14,7 +14,8 @@ class CollectorBackend(object):
     @abstractmethod
     def timer(self, name):
         """
-        abstract function to implement any collection method for timing and collection
+        abstract function to implement any collection method for timing and
+        collection
         :param name: name of the stats to be collected
         :return: context to collect elapsed time and send it to desired backend
         """
@@ -25,7 +26,8 @@ class StatsdBackend(CollectorBackend):
     """
     Backend to collect data to statsd
     """
-    name_separator = '.'
+
+    name_separator = "."
 
     def __init__(self, statsd):
         """
@@ -68,7 +70,7 @@ class LoggerBackend(CollectorBackend):
     Backend to collect data to logs
     """
 
-    name_separator = '.'
+    name_separator = "."
 
     def __init__(self, logger, log_level=logging.INFO):
         """

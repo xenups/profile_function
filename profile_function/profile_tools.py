@@ -1,4 +1,4 @@
-METRIC_PROFILE_NAMESPACE = 'functions_profile'
+METRIC_PROFILE_NAMESPACE = "functions_profile"
 
 METRIC_MODE_TIME = "time"
 
@@ -56,14 +56,18 @@ class ProfileFunction(object):
         Returns:
             timer object
         """
-        return self.backend.timer(self.get_profiling_metric_name(block_name, group, block=block))
+        return self.backend.timer(
+            self.get_profiling_metric_name(block_name, group, block=block)
+        )
 
     def profile_function(self, name=None, group="other"):
         """
-        decorator to profile function, send how many and how much time a function call takes
+        decorator to profile function, send how many and how much time a
+        function call takes
         Args:
             name: force function path
-            group: group name of a function to profile otherwise the the group name will be 'other'
+            group: group name of a function to profile otherwise the the group
+            name will be 'other'
 
         Returns:
             profile enabled function to use
