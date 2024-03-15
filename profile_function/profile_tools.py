@@ -1,8 +1,13 @@
+import logging
+from enum import Enum
+
 METRIC_PROFILE_NAMESPACE = "functions_profile"
 
-METRIC_MODE_TIME = "time"
-
 SEPARATOR = "."
+
+
+class MetricMode(Enum):
+    TIME = "time"
 
 
 class ProfileFunction(object):
@@ -11,22 +16,21 @@ class ProfileFunction(object):
         self.namespace = namespace
 
     @staticmethod
-    def get_name(name, group, block, sep=SEPARATOR):
+    def get_name(name, group, block=None, separator=SEPARATOR):
         """
         extract a function path
 
         args:
-            func: a function to extract it's path and function name separated with dot character given as a parameter
+            func: a function to extract its path and function name separated with dot character given as a parameter
             group: metric grouping scope
             block: specific block of the function (could be None)
         returns:
             function path separated with dot character param
         """
 
-        path = group + sep + name
-        if block is not None:
-            path += sep + block
-
+        path = f"{group}{separator}{name}"
+        if block:
+            path += f"{separator}{block}"
         return path
 
     def get_profiling_metric_name(self, name, group, block=None, sep=None):
@@ -40,11 +44,11 @@ class ProfileFunction(object):
             sep: separator for metric name
 
         Returns:
-            metric name to save it it metric backend
+            metric name to save it is metric backend
         """
-        _sep = sep or self.backend.name_separator
-        path = self.get_name(name, group, block=block, sep=_sep)
-        return f"{self.namespace}{_sep}{METRIC_MODE_TIME}{_sep}{path}"
+        _separator = sep or self.backend.name_separator
+        path = self.get_name(name, group, block=block, separator=_separator)
+        return f"{self.namespace}{_separator}{MetricMode.TIME.value}{_separator}{path}"
 
     def profile_block(self, block_name, group="other", block=None):
         """
@@ -58,10 +62,11 @@ class ProfileFunction(object):
         Returns:
             timer object
         """
-
-        return self.backend.timer(
-            self.get_profiling_metric_name(block_name, group, block=block)
-        )
+        try:
+            metric_name = self.get_profiling_metric_name(block_name, group, block=block)
+            return self.backend.timer(metric_name)
+        except Exception as e:
+            logging.error(f"Error profiling block {block_name}: {e}")
 
     def profile_function(self, name=None, group="other"):
         """
@@ -69,7 +74,7 @@ class ProfileFunction(object):
         function call takes
         Args:
             name: force function path
-            group: group name of a function to profile otherwise the the group
+            group: group name of a function to profile otherwise the group
             name will be 'other'
 
         Returns:
@@ -79,12 +84,12 @@ class ProfileFunction(object):
         def internal(func):
             def wrapper(*args, **kwargs):
                 function_name = func if name is not None else func.__name__
-
-                with self.profile_block(function_name, group):
-                    return func(*args, **kwargs)
-
+                try:
+                    with self.profile_block(function_name, group):
+                        return func(*args, **kwargs)
+                except Exception as e:
+                    logging.error(f"Error profiling function {function_name}: {e}")
             return wrapper
-
         return internal
 
 

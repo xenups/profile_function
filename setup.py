@@ -2,7 +2,6 @@
 
 from distutils.core import setup
 
-
 setup(
     name="profile_function",
     version="0.1",
